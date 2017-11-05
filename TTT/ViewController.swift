@@ -13,6 +13,9 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var labelWinner: UILabel!
     
+    
+    @IBOutlet var buttons: [UIButton]!
+    
     var players = ["player1","player2"]
     var colors = ["player1":UIColor.green,"player2":UIColor.yellow,"default":UIColor.gray]
     var currentPlayer = ""
@@ -22,9 +25,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        currentPlayer = players[0]
-        labelWinner.text = ""
-        // Do any additional setup after loading the view, typically from a nib.
+        setDefaults()
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,7 +38,7 @@ class ViewController: UIViewController {
         if (gameOver) {
             return
         }
-        
+        labelWinner.text = "\(currentPlayer)"
         if var player = clicked[currentPlayer] {
             print("Adding \(sender.tag) to clicked for \(currentPlayer)")
             clicked[currentPlayer]!.append(sender)
@@ -48,15 +49,17 @@ class ViewController: UIViewController {
             clicked[currentPlayer] = arr
         }
         
+        updateScore(senderid:sender.tag)
+        
         sender.backgroundColor = colors[currentPlayer]
+        sender.isEnabled = false;
+        
         if currentPlayer == players[0] {
             currentPlayer = players[1]
         }
         else {
             currentPlayer = players[0]
         }
-        sender.isEnabled = false;
-        updateScore(senderid:sender.tag)
         
         if let winner = isWinner() {
             labelWinner.text = "Congratulations \(winner) won!!"
@@ -69,25 +72,27 @@ class ViewController: UIViewController {
     
     @IBAction func resetPressed(_ sender: UIButton) {
         print("Reset clicked")
-        for (key,val) in clicked {
-            print("\(key) \(val.count)")
-            for button in val {
-                print(button.tag)
-                button.isEnabled = true
-                button.backgroundColor = colors["default"]
-            }
+        setDefaults()
+    }
+    
+    func setDefaults () {
+        for button in buttons {
+            button.backgroundColor = UIColor.gray
+            button.isEnabled = true
         }
-        labelWinner.text = ""
+        currentPlayer = players[0]
+        labelWinner.text = "Playing \(currentPlayer)"
         gameOver = false
-        clicked.removeAll()
         for (key,val) in scores {
             print ("\(key) \(val)")
             scores[key] = 0
         }
+        
     }
     
     func isWinner() -> String! {
         for (key,val) in scores {
+            print("\(key) \(val)")
             if val == 3 {
                 return players[0]
             }
@@ -102,9 +107,11 @@ class ViewController: UIViewController {
         let rcd = getRowColDig(tag:senderid)
         var updateScoreBy = 0
         if currentPlayer == players[0] {
+            print("Updating score by 1 \(currentPlayer)")
             updateScoreBy = 1
         }
         else {
+            print("Updating score by -1 \(currentPlayer)")
             updateScoreBy = -1
         }
         scores[rcd.0]! += updateScoreBy
